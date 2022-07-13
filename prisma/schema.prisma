@@ -2,19 +2,21 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
 }
 
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
   referralCode String
-  referrer     User?    @relation("Referral", fields: [referrerId], references: [id])
+  referrer     User?    @relation("Referral", fields: [referrerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   referree     User[]   @relation("Referral")
   referrerId   Int?
   createdAt    DateTime @default(now())
