@@ -1,0 +1,49 @@
+$background: #0f0e13;
+$primary: #fdffff;
+$primary-100: #e4f2ff;
+$primary-200: #cad8ed;
+$primary-300: #97a6bd;
+$primary-400: #93a3bb;
+$primary-500: #3a3f4a;
+$primary-600: #353c47;
+$primary-700: #24262e;
+$primary-800: #1a1a21;
+$purple-accent: #c27ff9;
+$purple-accent-300: #cc92f9;
+$purple-accent-500: #b75bf7;
+$blue-accent: #435bf9;
+$blue-accent-300: #a5a4f9;
+$blue-accent-500: #1521f8;
+$error: #ef466f;
+
+$themeTransition: 0.16s;
+
+$themes: (
+	dark: (
+		background: '15, 14, 19',
+		primary: '253, 255, 255',
+		primary-100: '228, 242, 255',
+		primary-200: '202, 216, 237',
+		primary-300: '151, 166, 189',
+		primary-400: '147, 163, 187',
+		primary-500: '58, 63, 74',
+		primary-600: '53, 60, 71',
+		primary-700: '36, 38, 46',
+		primary-800: '26, 26, 33',
+		purple-accent: '194, 127, 249',
+		purple-accent-300: '204, 146, 249',
+		purple-accent-500: '183, 91, 247',
+		blue-accent: '67, 91, 249',
+		blue-accent-350: '87, 149, 249',
+		blue-accent-300: '165, 164, 249',
+		blue-accent-500: '21, 33, 248',
+		error: '239, 70, 111',
+	),
+);
+
+:root {
+	@each $name, $color in map-get($themes, 'dark') {
+		--#{$name}: #{$color};
+	}
+	--theme-transition: 0.16s;
+}

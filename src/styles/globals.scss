@@ -1,0 +1,38 @@
+@use 'variables' as *;
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	// transition: color var(--theme-transition);
+}
+
+a,
+button {
+	text-decoration: none;
+	outline: none;
+	border: none;
+	color: inherit;
+	font: inherit;
+	display: inline-block;
+	text-align: left;
+	background: inherit;
+}
+
+html,
+body {
+	color: rgb(var(--primary));
+	background-color: rgb(var(--background));
+	font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	overflow-x: hidden;
+}
+
+input, textarea {
+	-webkit-appearance: none;
+	outline: none;
+	border: none;
+	background: none;
+}
