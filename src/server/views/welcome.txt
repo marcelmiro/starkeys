@@ -1,0 +1,14 @@
+***********************
+* Welcome to StarKeys *
+***********************
+
+Hello <%=firstName%>! Your application was sent successfully and we will now continue to review your profile. In the meantime, we have created a referral link for you to be able to invite other top talents to join us.
+
+<%=referralUrl%>
+
+The link above is a unique URL that you can send to your contacts. However, your referral code can only be used up to 5 times to ensure the exclusivity in the StarKeys' community.
+
+Questions? Email us at support@starkeys.io
+
+Thanks,
+StarKeys team.

@@ -1,3 +1,4 @@
+require('./src/server/env')
 const path = require('path')
 const loaderUtils = require('loader-utils')
 

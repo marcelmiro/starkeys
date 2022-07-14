@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import ExclamationIcon from '../../public/exclamation.svg'
+import ErrorMessage from './ErrorMessage'
 import styles from '../styles/InputGroup.module.scss'
 
 interface InputGroupProps {
@@ -11,6 +11,7 @@ interface InputGroupProps {
 	error?: string
 	textarea?: boolean
 	minHeight?: string
+	maxLength?: number
 }
 
 export default function InputGroup({
@@ -21,6 +22,7 @@ export default function InputGroup({
 	error,
 	textarea,
 	minHeight,
+	maxLength,
 }: InputGroupProps) {
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -52,6 +54,7 @@ export default function InputGroup({
 					placeholder={label}
 					id={id}
 					className={styles.input}
+					maxLength={maxLength}
 				/>
 			) : (
 				<textarea
@@ -61,15 +64,11 @@ export default function InputGroup({
 					className={styles.input}
 					ref={textareaRef}
 					style={{ minHeight }}
+					maxLength={maxLength}
 				></textarea>
 			)}
 
-			{error && (
-				<div className={styles.error}>
-					<ExclamationIcon />
-					<span role="alert">{error}</span>
-				</div>
-			)}
+			<ErrorMessage message={error} />
 		</div>
 	)
 }
