@@ -66,36 +66,6 @@ async function validateForm({
 	setError,
 	...data
 }: Partial<FormData> & { setError(message: string): void }) {
-	/* let message
-	if (!name) message = 'Full name is required'
-	else if (name.length < 3)
-		message = 'Full name must be at least 3 characters long'
-	else if (name.length > 200)
-		message = 'Full name cannot exceed 200 characters'
-	else if (!email) message = 'Email is required'
-	// TODO: Email regex
-	else if (!socialUrls) message = 'Social URLs is required'
-	else if (socialUrls.length < 5)
-		message = 'Social URLs must be at least 5 characters long'
-	else if (socialUrls.length > 500)
-		message = 'Social URLs cannot exceed 500 characters'
-	else if (!phone) message = 'Phone is required'
-	else if (phone.length < 3 || phone.length > 50) message = 'Phone is invalid'
-	else if (roles.size === 0) message = 'You must select at least 1 role'
-	else if (roles.size > 3) message = 'You can only select up to 3 roles'
-	else if (Array.from(roles).some((role) => role.length < 3))
-		message = 'Roles must be at least 3 characters long'
-	else if (Array.from(roles).some((role) => role.length > 32))
-		message = 'Roles cannot exceed 32 characters'
-	else if (!resume?.name) message = 'CV/Resume is required'
-	else if (!resume.name.endsWith('.pdf'))
-		message = 'CV/Resume must be a PDF file'
-
-	if (message) {
-		setError(message)
-		return false
-	} else return true */
-
 	try {
 		await zodFormValidation.parseAsync(data)
 		return true
@@ -140,11 +110,11 @@ export default function Join() {
 				resume: resume && (await encodeFile(resume)),
 			}
 
-			/* const isFormValid = await validateForm({
+			const isFormValid = await validateForm({
 				...payload,
 				setError: setFormError,
 			})
-			if (!isFormValid) return */
+			if (!isFormValid) return
 
 			return mutation.mutate(payload as FormData)
 		},
