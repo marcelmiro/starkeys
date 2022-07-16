@@ -1,0 +1,21 @@
+@mixin scrollbar($width: 0.5rem) {
+	scrollbar-width: thin;
+	scrollbar-color: rgb(var(--primary-400)) rgb(var(--primary-800));
+	&::-webkit-scrollbar {
+		width: $width;
+		cursor: default;
+	}
+	&::-webkit-scrollbar-track {
+		background-color: rgb(var(--primary-800));
+	}
+	&::-webkit-scrollbar-thumb {
+		background-color: rgb(var(--primary-400));
+		border-radius: 100vmax;
+		&:hover {
+			background-color: rgb(var(--primary-200));
+		}
+		&:active {
+			background-color: rgb(var(--primary));
+		}
+	}
+}

@@ -7,6 +7,7 @@ import { verifyReferralCode } from '../db/utils'
 import { insertUserToNotion } from '../notion/utils'
 import { generateId } from '../../utils/id'
 import { sendWelcomeEmail } from '../email/utils'
+import { uploadFile } from '../file/utils'
 
 const BASE_URL = process.env.BASE_URL as string
 const REFERRAL_CODE_LENGTH = Number(process.env.REFERRAL_CODE_LENGTH)
@@ -17,7 +18,7 @@ export const userRouter = createRouter()
 			referralCode: z
 				.string()
 				.min(3, 'Invalid referral code')
-				.max(16, 'Invalid referral code'),
+				.max(20, 'Invalid referral code'),
 		}),
 		async resolve({ ctx, input: { referralCode } }) {
 			const user = await verifyReferralCode(ctx, referralCode)
@@ -29,16 +30,30 @@ export const userRouter = createRouter()
 			referralCode: z
 				.string()
 				.min(3, 'Invalid referral code')
-				.max(16, 'Invalid referral code'),
+				.max(20, 'Invalid referral code'),
 			name: z
 				.string()
-				.min(3, 'Name must be at least 3 characters long')
-				.max(200, 'Name cannot exceed 200 characters'),
+				.min(3, 'Full name must be at least 3 characters long')
+				.max(200, 'Full name cannot exceed 200 characters'),
 			email: z.string().email('Invalid email'),
-			bio: z
+			socialUrls: z
 				.string()
-				.min(20, 'Bio must be at least 20 characters long')
-				.max(2000, 'Bio cannot exceed 2000 characters'),
+				.min(5, 'Social URLs must be at least 5 characters long')
+				.max(500, 'Social URLs cannot exceed 500 characters'),
+			phone: z
+				.string()
+				.min(3, 'Phone must be at least 3 characters long')
+				.max(50, 'Phone cannot exceed 50 characters'),
+			roles: z
+				.array(
+					z
+						.string()
+						.min(3, 'Roles must be at least 3 characters long')
+						.max(32, 'Roles cannot exceed 32 characters')
+				)
+				.min(1, 'You must select at least 1 role')
+				.max(3, 'You can only select up to 3 roles'),
+			resume: z.string().min(1, 'CV/Resume is required'),
 		}),
 		async resolve({ ctx, input }) {
 			const [referralCode, referrer] = await Promise.all([
@@ -63,21 +78,36 @@ export const userRouter = createRouter()
 							code: 'BAD_REQUEST',
 							message: 'Email is already in use',
 						})
+					else
+						throw new TRPCError({
+							code: 'INTERNAL_SERVER_ERROR',
+							message:
+								'An unexpected error occurred - Please try again later',
+						})
 				}
 				throw e
 			}
 
 			try {
+				const resumeUrl = await uploadFile({
+					file: input.resume,
+					contentType: 'application/pdf',
+				})
+
 				await Promise.all([
-					sendWelcomeEmail({
+					// TODO: Remove comment
+					/* sendWelcomeEmail({
 						referralUrl,
 						name: input.name,
 						email: input.email,
-					}),
+					}), */
 					insertUserToNotion({
 						name: input.name,
 						email: input.email,
-						bio: input.bio,
+						socialUrls: input.socialUrls,
+						phone: input.phone,
+						roles: input.roles,
+						resume: resumeUrl,
 					}),
 				])
 			} catch (e) {
@@ -86,7 +116,8 @@ export const userRouter = createRouter()
 					.catch(() => {})
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
-					message: 'An unexpected error occurred',
+					message:
+						'An unexpected error occurred - Please try again later',
 				})
 			}
 

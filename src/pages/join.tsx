@@ -1,21 +1,120 @@
 import { useState, useEffect, useMemo } from 'react'
 import Router, { useRouter } from 'next/router'
 import Link from 'next/link'
+import { z, ZodError } from 'zod'
 
 import { trpc, parseErrorMessage } from '../utils/trpc'
+import { encodeFile } from '../utils/file'
 import SkeletonImage from '../components/SkeletonImage'
 import LoadingSpinner from '../components/LoadingSpinner'
 import InputGroup from '../components/InputGroup'
 import ErrorMessage from '../components/ErrorMessage'
-import TickIcon from '../../public/tick.svg'
+import Multiselect from '../components/Multiselect'
+import FileUpload from '../components/FileUpload'
+import TickFillIcon from '../../public/tick_filled.svg'
 import styles from '../styles/join.module.scss'
+
+const ROLES = [
+	'Business strategy',
+	'Designer',
+	'Developer',
+	'Marketing',
+	'Public relations',
+	'Product manager',
+	'Sales',
+] as const
+
+interface FormData {
+	referralCode: string
+	name: string
+	email: string
+	socialUrls: string
+	phone: string
+	roles: string[]
+	resume: string
+}
+
+const zodFormValidation = z.object({
+	name: z
+		.string()
+		.min(3, 'Full name must be at least 3 characters long')
+		.max(200, 'Full name cannot exceed 200 characters'),
+	email: z.string().min(1, 'Email is required').email('Invalid email'),
+	socialUrls: z
+		.string()
+		.min(5, 'Social URLs must be at least 5 characters long')
+		.max(500, 'Social URLs cannot exceed 500 characters'),
+	phone: z
+		.string()
+		.min(3, 'Phone must be at least 3 characters long')
+		.max(50, 'Phone cannot exceed 50 characters'),
+	roles: z
+		.array(
+			z
+				.string()
+				.min(3, 'Roles must be at least 3 characters long')
+				.max(32, 'Roles cannot exceed 32 characters')
+		)
+		.min(1, 'You must select at least 1 role')
+		.max(3, 'You can only select up to 3 roles'),
+	resume: z
+		.string({ required_error: 'CV/Resume is required' })
+		.min(1, 'CV/Resume is required'),
+})
+
+async function validateForm({
+	setError,
+	...data
+}: Partial<FormData> & { setError(message: string): void }) {
+	/* let message
+	if (!name) message = 'Full name is required'
+	else if (name.length < 3)
+		message = 'Full name must be at least 3 characters long'
+	else if (name.length > 200)
+		message = 'Full name cannot exceed 200 characters'
+	else if (!email) message = 'Email is required'
+	// TODO: Email regex
+	else if (!socialUrls) message = 'Social URLs is required'
+	else if (socialUrls.length < 5)
+		message = 'Social URLs must be at least 5 characters long'
+	else if (socialUrls.length > 500)
+		message = 'Social URLs cannot exceed 500 characters'
+	else if (!phone) message = 'Phone is required'
+	else if (phone.length < 3 || phone.length > 50) message = 'Phone is invalid'
+	else if (roles.size === 0) message = 'You must select at least 1 role'
+	else if (roles.size > 3) message = 'You can only select up to 3 roles'
+	else if (Array.from(roles).some((role) => role.length < 3))
+		message = 'Roles must be at least 3 characters long'
+	else if (Array.from(roles).some((role) => role.length > 32))
+		message = 'Roles cannot exceed 32 characters'
+	else if (!resume?.name) message = 'CV/Resume is required'
+	else if (!resume.name.endsWith('.pdf'))
+		message = 'CV/Resume must be a PDF file'
+
+	if (message) {
+		setError(message)
+		return false
+	} else return true */
+
+	try {
+		await zodFormValidation.parseAsync(data)
+		return true
+	} catch (e) {
+		if (e instanceof ZodError && e.issues[0]?.message) {
+			setError(e.issues[0].message)
+		} else throw e
+	}
+}
 
 export default function Join() {
 	const [referralCode, setReferralCode] = useState('')
 	const [formError, setFormError] = useState('')
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
-	const [bio, setBio] = useState('')
+	const [socialUrls, setSocialUrls] = useState('')
+	const [phone, setPhone] = useState('')
+	const [roles, setRoles] = useState(new Set<string>())
+	const [resume, setResume] = useState<File>()
 
 	const {
 		isReady,
@@ -27,14 +126,48 @@ export default function Join() {
 		{ enabled: false, retry: false }
 	)
 
-	const mutation = trpc.useMutation(['user.add'])
+	const mutation = trpc.useMutation(['user.add'], { retry: false })
 
 	const sendForm = useMemo(
-		() => () => {
-			mutation.mutate({ referralCode, name, email, bio })
+		() => async () => {
+			const payload = {
+				referralCode,
+				name,
+				email,
+				socialUrls,
+				phone,
+				roles: Array.from(roles),
+				resume: resume && (await encodeFile(resume)),
+			}
+
+			/* const isFormValid = await validateForm({
+				...payload,
+				setError: setFormError,
+			})
+			if (!isFormValid) return */
+
+			return mutation.mutate(payload as FormData)
 		},
-		[mutation, referralCode, name, email, bio]
+		[mutation, referralCode, name, email, socialUrls, phone, roles, resume]
 	)
+
+	function handleEmailChange(value: string) {
+		setEmail(value.replace(/\s/g, ''))
+	}
+
+	function handlePhoneChange(value: string) {
+		setPhone(value.replace(/[^\+\(\)\d\s]/g, '').replace(/\s{2,}/g, ' '))
+	}
+
+	function handleRolesChange(value: Set<string>) {
+		if (value.size > 3) return
+		setRoles(value)
+	}
+
+	function handleResumeChange(value: File) {
+		if (!value.name || !value.name.endsWith('.pdf')) return
+		setResume(value)
+	}
 
 	useEffect(() => {
 		if (!code || typeof code !== 'string') {
@@ -53,7 +186,7 @@ export default function Join() {
 		refetch()
 	}, [referralCode, refetch])
 
-	useEffect(() => setFormError(''), [name, email, bio])
+	useEffect(() => setFormError(''), [name, email, socialUrls, phone, roles])
 
 	useEffect(() => {
 		setFormError(parseErrorMessage(mutation.error) || '')
@@ -64,7 +197,7 @@ export default function Join() {
 			return (
 				<>
 					<div className={styles.successIcon}>
-						<TickIcon />
+						<TickFillIcon />
 					</div>
 					<p className={styles.text}>
 						Your form was submitted successfully. We will now review
@@ -82,7 +215,7 @@ export default function Join() {
 		if (error)
 			return (
 				<>
-					<p className={styles.text}>{error.message}</p>
+					<p className={styles.text}>{parseErrorMessage(error)}</p>
 					<button
 						className={styles.shortButton}
 						onClick={() => Router.push('/')}
@@ -119,19 +252,48 @@ export default function Join() {
 						label="Email"
 						id="email"
 						value={email}
-						onChange={setEmail}
+						onChange={handleEmailChange}
 						maxLength={320}
 					/>
 
 					<InputGroup
-						label="Bio"
-						id="bio"
-						value={bio}
-						onChange={setBio}
+						label="Social URLs (e.g. LinkedIn & Github)"
+						id="socialUrls"
+						value={socialUrls}
+						onChange={setSocialUrls}
 						textarea
-						minHeight="10rem"
-						maxLength={2000}
+						minHeight="5rem"
+						maxLength={500}
 					/>
+
+					<InputGroup
+						label="Phone number (include country code, e.g. +44 75...)"
+						id="phone"
+						inputType="tel"
+						value={phone}
+						onChange={handlePhoneChange}
+						maxLength={320}
+					/>
+
+					<InputGroup label="Roles (max. 3)" id="roles">
+						<Multiselect
+							id="roles"
+							placeholder="Select roles"
+							items={ROLES}
+							value={roles}
+							onChange={handleRolesChange}
+							allowCustom
+						/>
+					</InputGroup>
+
+					<InputGroup label="CV/Resume" id="cv">
+						<FileUpload
+							id="resume"
+							contentType="application/pdf"
+							value={resume}
+							onChange={handleResumeChange}
+						/>
+					</InputGroup>
 
 					<button
 						onClick={sendForm}
@@ -145,14 +307,17 @@ export default function Join() {
 				</div>
 			</>
 		)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		data,
 		isLoading,
 		error,
-		bio,
-		code,
+		referralCode,
 		email,
 		name,
+		socialUrls,
+		phone,
+		roles,
 		sendForm,
 		formError,
 		mutation,

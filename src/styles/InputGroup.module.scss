@@ -1,3 +1,5 @@
+@use 'constants' as *;
+
 .label {
 	color: rgb(var(--primary-200));
 	font-weight: 400;
@@ -44,25 +46,7 @@
 		cursor: text;
 		resize: none;
 		overflow-y: auto;
-		scrollbar-width: thin;
-		scrollbar-color: rgb(var(--primary-400)) rgb(var(--primary-800));
-		&::-webkit-scrollbar {
-			width: 0.375rem;
-			cursor: default;
-		}
-		&::-webkit-scrollbar-track {
-			background-color: rgb(var(--primary-800));
-		}
-		&::-webkit-scrollbar-thumb {
-			background-color: rgb(var(--primary-400));
-			border-radius: 100vmax;
-			&:hover {
-				background-color: rgb(var(--primary-200));
-			}
-			&:active {
-				background-color: rgb(var(--primary));
-			}
-		}
+		@include scrollbar(0.375rem);
 	}
 }
 
@@ -90,5 +74,227 @@
 		* {
 			fill: rgb(var(--error));
 		}
+	}
+}
+
+.dropdownContainer {
+	position: relative;
+}
+
+.dropdownButton {
+	@extend .input;
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+	cursor: pointer;
+	&:focus {
+		border-color: rgb(var(--primary-600));
+	}
+	p {
+		flex: 1;
+		white-space: nowrap;
+		color: rgb(var(--primary-400));
+	}
+	svg {
+		width: 0.75rem;
+		min-width: 0.75rem;
+		height: 0.75rem;
+		transition: transform 0.36s;
+		margin-right: 0.75rem;
+		path {
+			fill: rgb(var(--primary-400));
+		}
+	}
+}
+
+.dropdownContainer.open {
+	.dropdownButton {
+		border-color: rgb(var(--purple-accent));
+		svg {
+			transform: rotate(-180deg);
+		}
+	}
+	.dropdownContent {
+		visibility: visible;
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.dropdownContent {
+	width: 100%;
+	max-height: 20rem;
+	overflow-y: auto;
+	position: absolute;
+	top: calc(100% + 0.75rem);
+	left: 0;
+	display: flex;
+	flex-flow: column nowrap;
+	gap: 0.375rem;
+	background-color: rgb(var(--primary-700));
+	border-radius: 0.5rem;
+	padding: 0.75rem;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(1rem);
+	z-index: 2;
+	transition: all 0.36s;
+	@include scrollbar(0.375rem);
+}
+
+.checkboxContainer {
+	padding-right: 0.25rem;
+	cursor: pointer;
+	display: flex;
+	flex-flow: row nowrap;
+
+	&:hover .checkbox,
+	input[type='checkbox']:focus + .checkbox {
+		border-color: rgb(var(--primary-200));
+	}
+	input[type='checkbox'] {
+		position: absolute;
+		opacity: 0;
+		cursor: pointer;
+		height: 0;
+		width: 0;
+		&:checked + .checkbox {
+			border-color: transparent;
+			background-color: rgb(var(--purple-accent));
+			svg {
+				opacity: 1;
+			}
+		}
+	}
+	p {
+		font-weight: 400;
+		font-size: 0.875rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+
+.checkbox {
+	width: 1rem;
+	min-width: 1rem;
+	height: 1rem;
+	margin-right: 0.5rem;
+	border: 0.063rem solid rgb(var(--primary-400));
+	border-radius: 0.25rem;
+	position: relative;
+	top: 0.125rem;
+	transition: border-color 0.16s, background-color 0.16s;
+
+	svg {
+		width: 0.625rem;
+		height: 0.625rem;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 1;
+		opacity: 0;
+		transition: opacity 0.16s;
+		path {
+			fill: white;
+		}
+	}
+}
+
+.customItemContainer {
+	margin-top: 0.25em;
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+	gap: 0.5rem;
+	.input {
+		height: 2.5rem;
+		margin-top: 0;
+		border-color: rgb(var(--primary-400));
+		&:focus {
+			border-color: rgb(var(--purple-accent));
+		}
+	}
+}
+
+.customItemButton {
+	width: 0.875rem;
+	min-width: 0.875rem;
+	height: 0.875rem;
+	padding: 0.75rem;
+	box-sizing: content-box;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	svg {
+		width: 100%;
+		height: 100%;
+		transform: rotate(-90deg);
+		path {
+			fill: rgb(var(--primary));
+			transition: fill 0.16s;
+		}
+	}
+	&:hover svg path {
+		fill: rgb(var(--purple-accent));
+	}
+}
+
+.inputFileContainer {
+	margin-top: 0.375rem;
+	width: 100%;
+	height: 10rem;
+	padding: 1rem;
+	background-color: rgb(var(--primary-700));
+	border: 0.063rem dashed transparent;
+	border-radius: 0.5rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	transition: background-color 0.36s, border-color 0.36s;
+	svg {
+		width: 1.5rem;
+		height: 1.5rem;
+		margin-bottom: 0.875rem;
+		&,
+		path {
+			fill: rgb(var(--primary-400));
+		}
+	}
+	&.active {
+		background-color: transparent;
+		border-color: rgb(var(--primary-600));
+	}
+	input[type='file'] {
+		position: absolute;
+		opacity: 0;
+		cursor: pointer;
+		height: 0;
+		width: 0;
+		display: none;
+	}
+}
+
+.inputFileContent {
+	width: 100%;
+	height: 100%;
+	padding: 0.625rem;
+	cursor: pointer;
+	display: flex;
+	flex-flow: column nowrap;
+	justify-content: center;
+	align-items: center;
+
+	p {
+		color: rgb(var(--primary-400));
+		font-weight: 400;
+		font-size: 0.875rem;
+		text-align: center;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 }
