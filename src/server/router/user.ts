@@ -95,12 +95,11 @@ export const userRouter = createRouter()
 				})
 
 				await Promise.all([
-					// TODO: Remove comment
-					/* sendWelcomeEmail({
+					sendWelcomeEmail({
 						referralUrl,
 						name: input.name,
 						email: input.email,
-					}), */
+					}),
 					insertUserToNotion({
 						name: input.name,
 						email: input.email,
