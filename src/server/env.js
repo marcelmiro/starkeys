@@ -21,8 +21,11 @@ const envSchema = z.object({
 	MAILGUN_API_KEY: z.string().min(1),
 	MAILGUN_DOMAIN: z.string().min(1),
 	MAILGUN_FROM_ADDRESS: z.string().min(1),
-	UPLOADCARE_PUBLIC_KEY: z.string().min(1),
-	UPLOADCARE_BASE_URL: z.string().url(),
+	NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY: z.string().min(1),
+	NEXT_PUBLIC_UPLOADCARE_BASE_URL: z
+		.string()
+		.url()
+		.refine((url) => url.endsWith('/')),
 })
 
 const env = envSchema.safeParse(process.env)

@@ -7,7 +7,6 @@ import { verifyReferralCode } from '../db/utils'
 import { insertUserToNotion } from '../notion/utils'
 import { generateId } from '../../utils/id'
 import { sendWelcomeEmail } from '../email/utils'
-import { uploadFile } from '../file/utils'
 
 const BASE_URL = process.env.BASE_URL as string
 const REFERRAL_CODE_LENGTH = Number(process.env.REFERRAL_CODE_LENGTH)
@@ -53,7 +52,11 @@ export const userRouter = createRouter()
 				)
 				.min(1, 'You must select at least 1 role')
 				.max(3, 'You can only select up to 3 roles'),
-			resume: z.string().min(1, 'CV/Resume is required'),
+			resume: z
+				.string()
+				.url(
+					'Unexpected error with CV/Resume - Please try to add the file again'
+				),
 		}),
 		async resolve({ ctx, input }) {
 			const [referralCode, referrer] = await Promise.all([
@@ -89,11 +92,6 @@ export const userRouter = createRouter()
 			}
 
 			try {
-				const resumeUrl = await uploadFile({
-					file: input.resume,
-					contentType: 'application/pdf',
-				})
-
 				await Promise.all([
 					sendWelcomeEmail({
 						referralUrl,
@@ -106,7 +104,7 @@ export const userRouter = createRouter()
 						socialUrls: input.socialUrls,
 						phone: input.phone,
 						roles: input.roles,
-						resume: resumeUrl,
+						resume: input.resume,
 					}),
 				])
 			} catch (e) {

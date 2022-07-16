@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { z, ZodError } from 'zod'
 
 import { trpc, parseErrorMessage } from '../utils/trpc'
-import { encodeFile } from '../utils/file'
+import { uploadFile } from '../utils/file'
 import SkeletonImage from '../components/SkeletonImage'
 import LoadingSpinner from '../components/LoadingSpinner'
 import InputGroup from '../components/InputGroup'
@@ -31,7 +31,7 @@ interface FormData {
 	socialUrls: string
 	phone: string
 	roles: string[]
-	resume: string
+	resume: File
 }
 
 const zodFormValidation = z.object({
@@ -57,9 +57,18 @@ const zodFormValidation = z.object({
 		)
 		.min(1, 'You must select at least 1 role')
 		.max(3, 'You can only select up to 3 roles'),
-	resume: z
-		.string({ required_error: 'CV/Resume is required' })
-		.min(1, 'CV/Resume is required'),
+	resume: z.object(
+		{
+			name: z
+				.string()
+				.min(1, 'CV/Resume is required')
+				.refine(
+					(name) => name.endsWith('.pdf'),
+					'CV/Resume must be a PDF file'
+				),
+		},
+		{ required_error: 'CV/Resume is required' }
+	),
 })
 
 async function validateForm({
@@ -72,6 +81,7 @@ async function validateForm({
 	} catch (e) {
 		if (e instanceof ZodError && e.issues[0]?.message) {
 			setError(e.issues[0].message)
+			return false
 		} else throw e
 	}
 }
@@ -85,9 +95,11 @@ export default function Join() {
 	const [phone, setPhone] = useState('')
 	const [roles, setRoles] = useState(new Set<string>())
 	const [resume, setResume] = useState<File>()
+	const [resumeUrl, setResumeUrl] = useState('')
+	const [isSubmissionLoading, setIsSubmissionLoading] = useState(false)
 
 	const {
-		isReady,
+		isReady: isRouterReady,
 		query: { code },
 	} = useRouter()
 
@@ -100,25 +112,53 @@ export default function Join() {
 
 	const sendForm = useMemo(
 		() => async () => {
-			const payload = {
-				referralCode,
-				name,
-				email,
-				socialUrls,
-				phone,
-				roles: Array.from(roles),
-				resume: resume && (await encodeFile(resume)),
+			try {
+				setIsSubmissionLoading(true)
+
+				const payload = {
+					referralCode,
+					name,
+					email,
+					socialUrls,
+					phone,
+					resume,
+					roles: Array.from(roles),
+				}
+
+				const isFormValid = await validateForm({
+					...payload,
+					setError: setFormError,
+				})
+				if (!isFormValid) return
+
+				let newResumeUrl: string
+				const resumeUrlExists = Boolean(resumeUrl)
+
+				if (resumeUrlExists) newResumeUrl = resumeUrl
+				else {
+					newResumeUrl = await uploadFile({
+						file: resume as File,
+						contentType: 'application/pdf',
+					})
+					setResumeUrl(newResumeUrl)
+				}
+
+				return mutation.mutate({ ...payload, resume: newResumeUrl })
+			} finally {
+				setIsSubmissionLoading(false)
 			}
-
-			const isFormValid = await validateForm({
-				...payload,
-				setError: setFormError,
-			})
-			if (!isFormValid) return
-
-			return mutation.mutate(payload as FormData)
 		},
-		[mutation, referralCode, name, email, socialUrls, phone, roles, resume]
+		[
+			mutation,
+			referralCode,
+			name,
+			email,
+			socialUrls,
+			phone,
+			roles,
+			resume,
+			resumeUrl,
+		]
 	)
 
 	function handleEmailChange(value: string) {
@@ -141,11 +181,11 @@ export default function Join() {
 
 	useEffect(() => {
 		if (!code || typeof code !== 'string') {
-			if (isReady) Router.push('/')
+			if (isRouterReady) Router.push('/')
 			return
 		}
 		setReferralCode(code)
-	}, [isReady, code])
+	}, [isRouterReady, code])
 
 	useEffect(() => {
 		if (!referralCode) return
@@ -156,11 +196,16 @@ export default function Join() {
 		refetch()
 	}, [referralCode, refetch])
 
-	useEffect(() => setFormError(''), [name, email, socialUrls, phone, roles])
+	useEffect(
+		() => setFormError(''),
+		[name, email, socialUrls, phone, roles, resume]
+	)
 
 	useEffect(() => {
 		setFormError(parseErrorMessage(mutation.error) || '')
 	}, [mutation.error])
+
+	useEffect(() => setResumeUrl(''), [resume])
 
 	const Content = useMemo(() => {
 		if (mutation.isSuccess)
@@ -267,17 +312,23 @@ export default function Join() {
 
 					<button
 						onClick={sendForm}
-						disabled={Boolean(formError) || mutation.isLoading}
+						disabled={
+							Boolean(formError) ||
+							mutation.isLoading ||
+							isSubmissionLoading
+						}
 						className={styles.button}
 					>
-						Send form
+						{(isSubmissionLoading || mutation.isLoading) && (
+							<LoadingSpinner />
+						)}
+						<p>Send form</p>
 					</button>
 
 					<ErrorMessage message={formError} />
 				</div>
 			</>
 		)
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		data,
 		isLoading,
@@ -291,6 +342,8 @@ export default function Join() {
 		sendForm,
 		formError,
 		mutation,
+		isSubmissionLoading,
+		resume,
 	])
 
 	return (

@@ -18,7 +18,7 @@ export function insertUserToNotion({
 	resume,
 }: CreateUserProps) {
 	const payload = {
-		parent: { database_id: databaseId },
+		parent: { type: 'database_id', database_id: databaseId },
 		properties: {
 			Name: {
 				title: [{ text: { content: name } }],
