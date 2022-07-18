@@ -1,13 +1,9 @@
 .container {
-	margin-top: 4rem;
 	display: flex;
 	flex-flow: column nowrap;
 	align-items: center;
 	gap: 2rem;
-}
-
-.title {
-	font-size: 5rem;
+    text-align: center;
 }
 
 .inputGroup {
@@ -23,7 +19,6 @@
 	flex-flow: row nowrap;
 	align-items: stretch;
 	padding: 0.25rem;
-	max-width: 94%;
 	border: 0.063rem solid rgb(var(--primary-600));
 	border-radius: 0.75rem;
 	transition: border-color 0.16s;
@@ -88,4 +83,8 @@
 			fill: rgb(var(--error));
 		}
 	}
+}
+
+.loader {
+    margin: 2rem auto 0;
 }

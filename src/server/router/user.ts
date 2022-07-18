@@ -10,6 +10,7 @@ import { sendWelcomeEmail } from '../email/utils'
 
 const BASE_URL = process.env.BASE_URL as string
 const REFERRAL_CODE_LENGTH = Number(process.env.REFERRAL_CODE_LENGTH)
+const ONE_MONTH_IN_SECONDS = 60 * 60 * 24 * 7 * 31
 
 export const userRouter = createRouter()
 	.query('verifyReferralCode', {
@@ -21,6 +22,12 @@ export const userRouter = createRouter()
 		}),
 		async resolve({ ctx, input: { referralCode } }) {
 			const user = await verifyReferralCode(ctx, referralCode)
+
+			ctx.res?.setHeader(
+				'Cache-Control',
+				`s-maxage=${ONE_MONTH_IN_SECONDS}, stale-while-revalidate`
+			)
+
 			return Boolean(user)
 		},
 	})
@@ -64,7 +71,7 @@ export const userRouter = createRouter()
 				verifyReferralCode(ctx, input.referralCode),
 			])
 
-			const referralUrl = `${BASE_URL}join?code=${referralCode}`
+			const referralUrl = `${BASE_URL}?code=${referralCode}`
 
 			try {
 				await ctx.prisma.user.create({

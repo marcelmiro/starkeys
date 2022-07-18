@@ -1,18 +1,8 @@
 .container {
-	width: 94%;
-	max-width: 40rem;
-	margin: 1.5rem auto 1rem;
+	width: 40rem;
+	max-width: 94%;
 	display: flex;
 	flex-flow: column nowrap;
-}
-
-.logo {
-	width: 3.5rem;
-	height: 3.5rem;
-	align-self: center;
-	border-radius: 50%;
-	overflow: hidden;
-	margin-bottom: 2rem;
 }
 
 .title {

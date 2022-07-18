@@ -15,7 +15,7 @@ export async function verifyReferralCode(ctx: Context, referralCode: string) {
 			message: 'Referral code not found',
 		})
 
-	if (user.referree.length >= MAX_REFERREES)
+	if (!user.unlimitedReferrals && user.referree.length >= MAX_REFERREES)
 		throw new TRPCError({
 			code: 'FORBIDDEN',
 			message: 'Referral code has expired',

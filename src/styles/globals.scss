@@ -4,11 +4,15 @@
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	// transition: color var(--theme-transition);
 }
 
-html, body {
+html,
+body {
 	height: 100%;
+}
+
+body {
+	text-align: center;
 }
 
 a,
@@ -34,9 +38,31 @@ body {
 	overflow-x: hidden;
 }
 
-input, textarea {
+input,
+textarea {
 	-webkit-appearance: none;
 	outline: none;
 	border: none;
 	background: none;
+}
+
+.wrapper {
+	max-width: 100%;
+	margin: 1.5rem auto 1rem;
+	padding: 0 4rem;
+	display: inline-flex;
+	flex-flow: column nowrap;
+	text-align: left;
+}
+
+@media screen and (max-width: 680px) {
+	.wrapper {
+		padding: 0 2rem;
+	}
+}
+
+@media screen and (max-width: 420px) {
+	.wrapper {
+		padding: 0 1rem;
+	}
 }

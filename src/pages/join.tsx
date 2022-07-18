@@ -1,11 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import Router, { useRouter } from 'next/router'
-import Link from 'next/link'
 import { z, ZodError } from 'zod'
 
 import { trpc, parseErrorMessage } from '../utils/trpc'
 import { uploadFile } from '../utils/file'
-import SkeletonImage from '../components/SkeletonImage'
 import LoadingSpinner from '../components/LoadingSpinner'
 import InputGroup from '../components/InputGroup'
 import ErrorMessage from '../components/ErrorMessage'
@@ -216,8 +214,8 @@ export default function Join() {
 					</div>
 					<p className={styles.text}>
 						Your form was submitted successfully. We will now review
-						your application and get in contact with you for your
-						first interview with us.
+						your application and reach out to you within 24 hours
+						with the following steps.
 					</p>
 					<button
 						className={styles.shortButton}
@@ -243,15 +241,11 @@ export default function Join() {
 			return <LoadingSpinner className={styles.loader} />
 		return (
 			<>
-				<h1 className={styles.title}>Hello {referralCode}</h1>
+				<h1 className={styles.title}>Application form</h1>
 
 				<p className={styles.subtitle}>
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-					Proin dapibus, magna eu lobortis posuere, est nibh lobortis
-					quam, vel consequat lorem augue eget ipsum. Donec dolor
-					quam, condimentum id nibh non, vestibulum egestas justo. Sed
-					ultrices ipsum dolor, non commodo tellus placerat eu. In
-					semper dolor sit amet congue elementum.
+					Fill out this form and our team will get back to you within
+					24 hours.
 				</p>
 
 				<div className={styles.form}>
@@ -333,7 +327,6 @@ export default function Join() {
 		data,
 		isLoading,
 		error,
-		referralCode,
 		email,
 		name,
 		socialUrls,
@@ -346,15 +339,5 @@ export default function Join() {
 		resume,
 	])
 
-	return (
-		<div className={styles.container}>
-			<Link href="/">
-				<a target="_self" className={styles.logo}>
-					<SkeletonImage src="/logo.png" alt="Logo" />
-				</a>
-			</Link>
-
-			{Content}
-		</div>
-	)
+	return <div className={styles.container}>{Content}</div>
 }

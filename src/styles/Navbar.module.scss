@@ -1,0 +1,19 @@
+.container {
+	display: flex;
+	flex-flow: row wrap;
+	align-items: center;
+	gap: 0.5rem 1rem;
+    margin-bottom: 2rem;
+}
+
+.logo {
+	width: 2rem;
+	min-width: 2rem;
+	height: 2rem;
+}
+
+.name {
+	font-weight: 500;
+	font-size: 1.125rem;
+	letter-spacing: 0.5px;
+}
