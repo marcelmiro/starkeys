@@ -12,6 +12,8 @@ import FileUpload from '../components/FileUpload'
 import TickFillIcon from '../../public/tick_filled.svg'
 import styles from '../styles/join.module.scss'
 
+const RESUME_MAX_SIZE_IN_BYTES = 1024 * 1024
+
 const ROLES = [
 	'Business strategy',
 	'Designer',
@@ -63,6 +65,12 @@ const zodFormValidation = z.object({
 				.refine(
 					(name) => name.endsWith('.pdf'),
 					'CV/Resume must be a PDF file'
+				),
+			size: z
+				.number()
+				.lte(
+					RESUME_MAX_SIZE_IN_BYTES,
+					'CV/Resume file size exceeded (max 1MB)'
 				),
 		},
 		{ required_error: 'CV/Resume is required' }
@@ -134,10 +142,21 @@ export default function Join() {
 
 				if (resumeUrlExists) newResumeUrl = resumeUrl
 				else {
-					newResumeUrl = await uploadFile({
-						file: resume as File,
-						contentType: 'application/pdf',
-					})
+					try {
+						newResumeUrl = await uploadFile({
+							file: resume as File,
+							contentType: 'application/pdf',
+						})
+					} catch (e) {
+						try {
+							const error = JSON.parse(JSON.stringify(e))
+							if (error?.message) {
+								setFormError(error.message)
+								return
+							}
+						} catch (_) {}
+						throw e
+					}
 					setResumeUrl(newResumeUrl)
 				}
 
@@ -276,7 +295,7 @@ export default function Join() {
 					/>
 
 					<InputGroup
-						label="Phone number (include country code, e.g. +44 75...)"
+						label="Phone number (include country code, e.g. +1 123...)"
 						id="phone"
 						inputType="tel"
 						value={phone}

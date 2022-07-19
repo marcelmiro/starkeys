@@ -44,8 +44,8 @@ export default function Multiselect({
 		const customValue = customItem.trim()
 		if (!customValue || customValue.length < 3 || value.has(customValue))
 			return
-        const newValue = new Set(value)
-        newValue.add(customValue)
+		const newValue = new Set(value)
+		newValue.add(customValue)
 		onChange(newValue)
 		setCustomItem('')
 	}
@@ -62,6 +62,19 @@ export default function Multiselect({
 		[items, value, value.size]
 	)
 
+	function Placeholder() {
+		if (value.size === 0) return <p>{placeholder}</p>
+		return (
+			<div className={styles.dropdownPlaceholder}>
+				{Array.from(value).map((item, i) => (
+					<div className={styles.dropdownPlaceholderItem} key={i}>
+						{item}
+					</div>
+				))}
+			</div>
+		)
+	}
+
 	return (
 		<div
 			className={classNames(styles.dropdownContainer, {
@@ -70,7 +83,7 @@ export default function Multiselect({
 			onBlur={(e) => handleBlur(e, () => setIsOpen(false))}
 		>
 			<button onClick={toggleIsOpen} className={styles.dropdownButton}>
-				<p>{placeholder}</p>
+				<Placeholder />
 				<ArrowHead />
 			</button>
 
