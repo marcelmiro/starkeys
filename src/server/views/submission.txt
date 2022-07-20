@@ -1,0 +1,12 @@
+***********************
+* Welcome to StarKeys *
+***********************
+
+Hello <%=firstName%>,
+
+Thank you for applying to StarKeys. This is your first step in joining our global talent network. We will now review your application and get back to you within 24 hours with next steps.
+
+Got any questions? Email us at jerry@starkeys.io
+
+Thanks,
+StarKeys Team.

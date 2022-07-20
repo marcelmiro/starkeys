@@ -6,7 +6,7 @@ import { createRouter } from './context'
 import { verifyReferralCode } from '../db/utils'
 import { insertUserToNotion } from '../notion/utils'
 import { generateId } from '../../utils/id'
-import { sendWelcomeEmail } from '../email/utils'
+import { sendSubmissionEmail } from '../email/utils'
 
 const BASE_URL = process.env.BASE_URL as string
 const REFERRAL_CODE_LENGTH = Number(process.env.REFERRAL_CODE_LENGTH)
@@ -100,9 +100,8 @@ export const userRouter = createRouter()
 
 			try {
 				await Promise.all([
-					sendWelcomeEmail({
-						referralUrl,
-						name: input.name,
+					sendSubmissionEmail({
+						firstName: input.name.split(' ')[0] as string,
 						email: input.email,
 					}),
 					insertUserToNotion({
